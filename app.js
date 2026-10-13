@@ -15,7 +15,7 @@
       messagePlaceholder: 'Tus buenos deseos, una oración o unas palabras de amor...',
       messageHint: 'Lo guardaremos como un recuerdo.', dateLabel: '¿Qué día crees que nacerá?',
       dueHint: 'Fecha estimada de parto: 16 de marzo de 2027', submit: 'Guardar y descubrir la sorpresa',
-      privacyNote: 'Tu respuesta será guardada de forma privada. No necesitas crear ninguna cuenta.',
+      privacyNote: 'Tu respuesta y tu mensaje podrán verse en el enlace de mensajes de la familia. No necesitas crear ninguna cuenta.',
       saving: 'Guardando tu mensaje...', failed: 'No pudimos guardar tu respuesta. Revisa tu conexión e inténtalo de nuevo.',
       setup: 'Esta página todavía no está conectada a Supabase. El organizador debe completar config.js.',
       missingFields: 'Completa tu nombre, selecciona niño o niña y elige una fecha.',
@@ -40,7 +40,7 @@
       messagePlaceholder: 'Your wishes, a prayer, or a few words of love...',
       messageHint: 'We will keep it as a special memory.', dateLabel: 'When do you think our baby will arrive?',
       dueHint: 'Estimated due date: March 16, 2027', submit: 'Save my prediction & reveal the surprise',
-      privacyNote: 'Your response is saved privately. No account is needed.',
+      privacyNote: 'Your response and message can be viewed through the family’s message link. No account is needed.',
       saving: 'Saving your message...', failed: 'We could not save your answer. Please check your connection and try again.',
       setup: 'This page is not connected to Supabase yet. The organizer needs to complete config.js.',
       missingFields: 'Please enter your name, select boy or girl, and choose a date.',
@@ -169,7 +169,7 @@
       const client = window.supabase.createClient(config.SUPABASE_URL.replace(/\/$/, ''), config.SUPABASE_PUBLISHABLE_KEY, {
         auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
       });
-      // Important: do not .select() after insert. Guests have no SELECT permission.
+      // Save only; the separate message viewer reads responses.
       const { error } = await client.from('predictions').insert({
         name, prediction: gender, name_guess: nameGuess, message, birth_guess: birthGuess, language
       });
