@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f9f5ef" />
+  <meta name="description" content="Un anuncio especial de la familia Escalante / A special announcement from the Escalante family." />
+  <title>Una dulce sorpresa · Familia Escalante</title>
+  <link rel="icon" type="image/svg+xml" href="./images/favicon.svg" />
+  <link rel="stylesheet" href="./styles.css" />
+  <link rel="preload" as="image" href="./images/landing-watercolor.webp" />
+</head>
+<body class="landing-visible">
+  <div class="site-bg" aria-hidden="true"><span class="halo halo-a"></span><span class="halo halo-b"></span></div>
+  <main class="shell">
+    <header class="topline">
+      <span class="topline-detail" data-i18n="topline">UNA PEQUEÑA GRAN NOTICIA / A LITTLE BIG ANNOUNCEMENT</span>
+    </header>
+
+    <!-- Screen 1: Language selection -->
+    <section class="screen active" id="language-screen" aria-labelledby="language-title">
+      <div class="lang-layout">
+        <div class="ornament" aria-hidden="true">✦ &nbsp; ✧ &nbsp; ✦</div>
+        <p class="eyebrow">WITH LOVE · CON AMOR</p>
+        <h1 id="language-title" class="hero-title">Familia<br><em>Escalante</em></h1>
+        <p class="intro">Algo muy especial está por llegar.<br>Something wonderful is on its way.</p>
+        <div class="rule-flower" aria-hidden="true"><span></span>✳<span></span></div>
+        <h2 class="select-title">Elige tu idioma <span class="slash">/</span> Choose your language</h2>
+        <div class="language-actions">
+          <button type="button" class="language-button" data-language="es"><span class="lang-code">ES</span><span><strong>Español</strong><small>Continuar en español</small></span><span aria-hidden="true" class="right-arrow">↗</span></button>
+          <button type="button" class="language-button" data-language="en"><span class="lang-code">EN</span><span><strong>English</strong><small>Continue in English</small></span><span aria-hidden="true" class="right-arrow">↗</span></button>
+        </div>
+        <p class="lang-foot">♡ &nbsp; Hecho con amor para nuestra familia y amigos &nbsp; ♡</p>
+      </div>
+    </section>
+
+    <!-- Screen 2: Prediction form -->
+    <section class="screen" id="form-screen" aria-labelledby="form-title" hidden>
+      <div class="form-top-actions"><button class="back-link" id="change-language" type="button">← <span data-i18n="changeLanguage">Cambiar idioma</span></button><span class="step-marker" data-i18n="stepMarker">01 / TU PREDICCIÓN</span></div>
+      <div class="form-layout">
+        <div class="editorial">
+          <div class="illustration-wrap"><img src="./images/stars.svg" alt="" class="stars-illustration" /></div>
+          <p class="eyebrow" data-i18n="formEyebrow">NUESTRA FAMILIA CRECE</p>
+          <h1 class="section-title" id="form-title" data-i18n="formTitle">Una dulce<br><em>sorpresa.</em></h1>
+          <p class="body-copy" data-i18n="formIntro">Antes de compartir nuestra gran noticia, queremos saber qué piensas. ¡Tu respuesta y tu mensaje serán un recuerdo muy especial!</p>
+          <aside class="scripture">
+            <span class="scripture-marker" aria-hidden="true">✳</span>
+            <p class="scripture-reference" data-i18n="scriptureReference">Salmo 127:3–5 · LBLA</p>
+            <div class="scripture-passage">
+              <p><sup>3</sup> <span data-i18n="scriptureVerse3">He aquí, don del Señor son los hijos; y recompensa es el fruto del vientre.</span></p>
+              <p><sup>4</sup> <span data-i18n="scriptureVerse4">Como flechas en la mano del guerrero, así son los hijos tenidos en la juventud.</span></p>
+              <p><sup>5</sup> <span data-i18n="scriptureVerse5">Bienaventurado el hombre que de ellos tiene llena su aljaba; no será avergonzado cuando hable con sus enemigos en la puerta.</span></p>
+            </div>
+          </aside>
+        </div>
+        <div class="form-panel">
+          <form id="prediction-form" novalidate>
+            <div class="field">
+              <label for="guest-name"><span class="field-number">01</span> <span data-i18n="nameLabel">¿Cómo te llamas?</span><span class="req">*</span></label>
+              <input id="guest-name" name="name" type="text" minlength="1" maxlength="80" autocomplete="name" required data-i18n-placeholder="namePlaceholder" placeholder="Escribe tu nombre" />
+            </div>
+            <fieldset class="field">
+              <legend><span class="field-number">02</span> <span data-i18n="guessLabel">¿Qué crees que será?</span><span class="req">*</span></legend>
+              <div class="gender-choices">
+                <label class="gender-card boy"><input type="radio" name="prediction" value="boy" required /><span class="gender-icon" aria-hidden="true">✦</span><span data-i18n="boy">Niño</span><span class="selection-dot" aria-hidden="true"></span></label>
+                <label class="gender-card girl"><input type="radio" name="prediction" value="girl" required /><span class="gender-icon" aria-hidden="true">✿</span><span data-i18n="girl">Niña</span><span class="selection-dot" aria-hidden="true"></span></label>
+              </div>
+            </fieldset>
+            <div class="field">
+              <label for="baby-name-guess"><span class="field-number">03</span> <span data-i18n="nameGuessLabel">¿Cómo crees que se va a llamar?</span><span class="optional" data-i18n="optional">(opcional)</span></label>
+              <input id="baby-name-guess" name="name_guess" type="text" maxlength="80" data-i18n-placeholder="nameGuessPlaceholder" placeholder="Escribe el nombre que imaginas" />
+            </div>
+            <div class="field">
+              <label for="baby-message"><span class="field-number">04</span> <span data-i18n="messageLabel">Un mensaje para nuestro bebé</span><span class="optional" data-i18n="optional">(opcional)</span></label>
+              <textarea id="baby-message" name="message" rows="3" maxlength="600" data-i18n-placeholder="messagePlaceholder" placeholder="Tus buenos deseos, una oración o unas palabras de amor..."></textarea>
+              <div class="field-hint"><span data-i18n="messageHint">Lo guardaremos como un recuerdo.</span><span id="message-count">0 / 600</span></div>
+            </div>
+            <div class="field last-field">
+              <label for="birth-guess"><span class="field-number">05</span> <span data-i18n="dateLabel">¿Qué día crees que nacerá?</span><span class="req">*</span></label>
+              <p class="due-hint"><span aria-hidden="true">☼</span> <span data-i18n="dueHint">Fecha estimada de parto: 16 de marzo de 2027</span></p>
+              <input id="birth-guess" name="birth_guess" type="date" min="2027-02-15" max="2027-03-31" required />
+            </div>
+            <!-- Simple honeypot against unsophisticated bots; not a CAPTCHA. -->
+            <div class="trap" aria-hidden="true"><label for="website">Website</label><input id="website" name="website" tabindex="-1" autocomplete="off" /></div>
+            <button class="submit-button" type="submit" id="submit-button"><span data-i18n="submit">Guardar y descubrir la sorpresa</span><span class="button-arrow" aria-hidden="true">→</span></button>
+            <p class="submission-note" data-i18n="privacyNote">Tu respuesta será guardada de forma privada. No necesitas crear ninguna cuenta.</p>
+            <p class="feedback" id="form-feedback" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- Screen 3: Reveal. Only displayed after a successful database insert. -->
+    <section class="screen" id="reveal-screen" aria-labelledby="reveal-title" hidden>
+      <div class="reveal-container">
+        <div class="confetti confetti-1" aria-hidden="true">✳</div><div class="confetti confetti-2" aria-hidden="true">✦</div><div class="confetti confetti-3" aria-hidden="true">✳</div><div class="confetti confetti-4" aria-hidden="true">✧</div>
+        <p class="eyebrow reveal-eyebrow" data-i18n="revealEyebrow">NUESTRA DULCE BENDICIÓN</p>
+        <div class="reveal-stars" aria-hidden="true">✧ &nbsp; ✦ &nbsp; ✧</div>
+        <h1 class="reveal-pretitle" id="reveal-title" data-i18n="itsABoy">¡Es un niño!</h1>
+        <p class="welcome-line" data-i18n="welcomeLine">Démosle la bienvenida a</p>
+        <h2 class="baby-name">Alexander<br><em>Escalante</em></h2>
+        <p class="reveal-message" data-i18n="revealMessage">Un nuevo regalo de Dios, una nueva historia de amor y un hermanito a quien abrazar.</p>
+        <div class="photo-grid">
+          <figure class="photo-tile"><div class="photo-frame"><div class="ultrasound-window"><img id="ultrasound-photo" src="./images/ultrasound.jpg" alt="Ecografía de Alexander" data-i18n-alt="ultrasoundAlt" width="590" height="1280" loading="lazy" decoding="async" /></div></div><figcaption data-i18n="ultrasoundCaption">Nuestro pequeño Alexander</figcaption></figure>
+          <figure class="photo-tile"><div class="photo-frame"><img id="brother-photo" src="./images/big-brother.jpg" alt="Jere vestido de Buzz Lightyear, sosteniendo la ecografía de su hermanito Alexander" data-i18n-alt="brotherAlt" width="2880" height="3840" loading="lazy" decoding="async" /></div><figcaption data-i18n="brotherCaption">Jere, el mejor hermano mayor</figcaption></figure>
+        </div>
+        <p class="blessing" data-i18n="closing">Dos hermanos, una vida de aventuras. Gracias por acompañarnos en esta alegría.</p>
+        <div class="rule-flower" aria-hidden="true"><span></span>✳<span></span></div>
+        <p class="signature" data-i18n="signature">Con amor, la familia Escalante</p>
+        <p class="submitted-thanks" data-i18n="thanks">♡ Gracias por dejarnos un mensaje ♡</p>
+      </div>
+    </section>
+  </main>
+  <script src="./config.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
