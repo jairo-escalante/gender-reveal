@@ -39,11 +39,11 @@ You can use `.png` instead; update the paths to match. For mobile performance, i
 
 ## 3. Publish the HTML free with GitHub Pages
 
-1. Log in to https://github.com and create a new **public** repository named e.g. `alexander-reveal`.
+1. Log in to https://github.com and create a new **public** repository named e.g. `gender-reveal`.
 2. Upload the **contents** of this folder (keep `index.html`, `styles.css`, `app.js`, `config.js`, `supabase.sql`, `README.md`, `.nojekyll` and `images/` with the same relative paths). You may omit `supabase.sql` from the public repo; it is only needed during setup.
 3. Open repository **Settings → Pages → Build and deployment → Deploy from a branch**.
 4. Choose `main` and `/(root)`, then click **Save**.
-5. GitHub will show the public link, usually `https://YOUR-USERNAME.github.io/alexander-reveal/`.
+5. GitHub will show the public link, usually `https://YOUR-USERNAME.github.io/gender-reveal/`. This website is published at https://jairo-escalante.github.io/gender-reveal/.
 6. Open that link on your phone, choose both languages in separate tests, and submit sample predictions. Verify the sample rows in Supabase, then delete your sample data **from the Supabase dashboard** if desired.
 7. Share the GitHub Pages link through WhatsApp once photos and tests are complete.
 
@@ -63,7 +63,7 @@ The questionnaire displays **Salmo 127:3–5** in full, using the Spanish LBLA t
 
 ## Due date
 
-The displayed estimated due date is **March 16, 2027**. Date predictions can be selected from **February 15 through March 31, 2027**, inclusive. Adjust the bounds consistently in `index.html` and `supabase.sql` if desired.
+The displayed estimated due date is **March 16, 2027**. Guests can select any valid date for their prediction; there is no minimum or maximum date. A date is still required. The database setup removes the original date-range constraint for existing installations and keeps the other answer checks.
 
 ## Files
 
