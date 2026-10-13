@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Messages for Alexander</title>
+  <style>
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; background: #f7f5ef; color: #334940; font-family: system-ui, sans-serif; }
+    main { width: min(760px, 100%); margin: auto; padding: 36px 20px; }
+    header { text-align: center; margin-bottom: 24px; }
+    header p { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { font: normal clamp(28px, 5vw, 42px) Georgia, serif; margin: 12px 0; }
+    .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 14px; }
+    button, select { font: inherit; border: 1px solid #ced6ce; background: #fff; color: #334940; border-radius: 12px; padding: 10px 14px; cursor: pointer; min-height: 44px; }
+    button:hover { background: #eaf0e8; }
+    button:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #728b72; outline-offset: 4px; }
+    button:disabled { opacity: .4; cursor: default; }
+    article { background: white; border: 1px solid #e1e5dc; border-radius: 24px; padding: clamp(24px, 5vw, 44px); box-shadow: 0 8px 30px #33494008; touch-action: pan-y; }
+    h2 { font: normal 28px Georgia, serif; margin: 0 0 24px; overflow-wrap: anywhere; }
+    blockquote { font: normal clamp(21px, 3.5vw, 29px)/1.6 Georgia, serif; margin: 0 0 32px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    dl { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding-top: 20px; border-top: 1px solid #e7e9e2; }
+    dt { color: #738074; font-size: 12px; margin-bottom: 6px; }
+    dd { margin: 0; font-size: 15px; overflow-wrap: anywhere; }
+    nav { display: flex; align-items: center; justify-content: center; gap: 20px; margin-top: 20px; }
+    nav button { font-size: 26px; width: 56px; }
+    #position { font-variant-numeric: tabular-nums; min-width: 72px; text-align: center; }
+    #slider { width: 100%; margin: 24px 0 0; accent-color: #637f62; cursor: pointer; }
+    .hint { text-align: center; color: #738074; font-size: 13px; }
+    #status { text-align: center; padding: 16px; line-height: 1.6; }
+    @media (max-width: 480px) { main { padding: 24px 16px; } dl { grid-template-columns: 1fr; gap: 12px; } h2 { font-size: 25px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header><p>Familia Escalante</p><h1 id="title">Messages for Alexander</h1></header>
+    <div class="toolbar">
+      <select id="language" aria-label="Language"><option value="en">English</option><option value="es">Español</option></select>
+      <button id="refresh" type="button">Refresh</button>
+    </div>
+    <p id="status" role="status">Loading messages…</p>
+    <section id="viewer" hidden aria-label="Messages">
+      <article id="card" aria-live="polite" aria-atomic="true">
+        <h2 id="name"></h2>
+        <blockquote id="message"></blockquote>
+        <dl>
+          <div><dt id="prediction-label">Prediction</dt><dd id="prediction"></dd></div>
+          <div><dt id="guess-label">Name guess</dt><dd id="guess"></dd></div>
+          <div><dt id="birth-label">Birth date guess</dt><dd id="birth"></dd></div>
+        </dl>
+      </article>
+      <nav aria-label="Message navigation">
+        <button id="previous" type="button" aria-label="Previous message">←</button>
+        <span id="position" aria-live="polite"></span>
+        <button id="next" type="button" aria-label="Next message">→</button>
+      </nav>
+      <input id="slider" type="range" min="1" max="1" value="1" aria-label="Choose a message">
+      <p class="hint" id="hint">Use the arrows, drag the slider, or swipe.</p>
+    </section>
+  </main>
+  <script src="./config.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const config = window.REVEAL_CONFIG || {};
+    const words = {
+      en: { title: 'Messages for Alexander', refresh: 'Refresh', loading: 'Loading messages…', empty: 'No responses yet. Check back soon.', failed: 'Messages could not be loaded. Please try Refresh.', permission: 'The message viewer needs to be enabled in the database.', prediction: 'Prediction', guess: 'Name guess', birth: 'Birth date guess', boy: 'Boy', girl: 'Girl', blank: 'No message was included.', none: 'Not provided', previous: 'Previous message', next: 'Next message', slider: 'Choose a message', hint: 'Use the arrows, drag the slider, or swipe.' },
+      es: { title: 'Mensajes para Alexander', refresh: 'Actualizar', loading: 'Cargando mensajes…', empty: 'Todavía no hay respuestas. Vuelve pronto.', failed: 'No pudimos cargar los mensajes. Pulsa Actualizar para intentar de nuevo.', permission: 'Falta habilitar el visor de mensajes en la base de datos.', prediction: 'Predicción', guess: 'Nombre que imaginó', birth: 'Fecha de nacimiento que imaginó', boy: 'Niño', girl: 'Niña', blank: 'No dejó un mensaje.', none: 'Sin respuesta', previous: 'Mensaje anterior', next: 'Mensaje siguiente', slider: 'Elige un mensaje', hint: 'Usa las flechas, mueve la barra o desliza.' }
+    };
+    let language = navigator.language.startsWith('es') ? 'es' : 'en';
+    let rows = [], index = 0, loading = false, statusKey = 'loading', touch = null;
+    const t = key => words[language][key];
+
+    function render() {
+      $('viewer').hidden = rows.length === 0;
+      $('status').hidden = statusKey === null;
+      $('status').textContent = statusKey ? t(statusKey) : '';
+      if (!rows.length) return;
+      const row = rows[index];
+      // Guest content is always rendered as text, never HTML.
+      $('name').textContent = row.name;
+      $('message').textContent = row.message?.trim() ? row.message : t('blank');
+      $('message').lang = row.language === 'es' ? 'es' : 'en';
+      $('prediction').textContent = row.prediction === 'boy' ? t('boy') : t('girl');
+      $('guess').textContent = row.name_guess?.trim() ? row.name_guess : t('none');
+      const date = new Date(`${row.birth_guess}T12:00:00`);
+      $('birth').textContent = Number.isNaN(date.getTime()) ? t('none') : date.toLocaleDateString(language, { month: 'long', day: 'numeric', year: 'numeric' });
+      $('position').textContent = `${index + 1} / ${rows.length}`;
+      $('slider').max = String(rows.length);
+      $('slider').value = String(index + 1);
+      $('slider').setAttribute('aria-valuetext', `${index + 1} / ${rows.length}: ${row.name}`);
+      $('previous').disabled = $('next').disabled = rows.length < 2;
+      $('slider').disabled = rows.length < 2;
+    }
+    function translate() {
+      document.documentElement.lang = language;
+      document.title = t('title');
+      $('language').value = language;
+      for (const [id, key] of Object.entries({title:'title',refresh:'refresh','prediction-label':'prediction','guess-label':'guess','birth-label':'birth',hint:'hint'})) $(id).textContent = t(key);
+      for (const key of ['previous','next','slider']) $(key).setAttribute('aria-label', t(key));
+      render();
+    }
+    function move(delta) {
+      if (rows.length < 2) return;
+      index = (index + delta + rows.length) % rows.length;
+      render();
+    }
+    async function load() {
+      if (loading) return;
+      loading = true;
+      $('refresh').disabled = true;
+      statusKey = 'loading';
+      render();
+      const selected = rows[index]?.id;
+      try {
+        const all = [];
+        // Page through every response, including rows with an optional blank message.
+        const pageSize = 500;
+        const cutoff = new Date().toISOString();
+        for (let offset = 0; ; offset += pageSize) {
+          const url = new URL('/rest/v1/predictions', config.SUPABASE_URL);
+          url.searchParams.set('select', 'id,created_at,name,message,prediction,name_guess,birth_guess,language');
+          url.searchParams.set('order', 'created_at.asc,id.asc');
+          url.searchParams.set('created_at', `lte.${cutoff}`);
+          url.searchParams.set('offset', String(offset));
+          url.searchParams.set('limit', String(pageSize));
+          const response = await fetch(url, { headers: { apikey: config.SUPABASE_PUBLISHABLE_KEY }, cache: 'no-store', signal: AbortSignal.timeout(20000) });
+          if (!response.ok) {
+            const error = new Error('Could not read responses');
+            error.permission = [401, 403].includes(response.status);
+            throw error;
+          }
+          const page = await response.json();
+          if (!Array.isArray(page)) throw new Error('Unexpected response');
+          all.push(...page);
+          if (page.length < pageSize) break;
+        }
+        rows = all;
+        index = Math.max(0, rows.findIndex(row => row.id === selected));
+        statusKey = rows.length ? null : 'empty';
+      } catch (error) {
+        statusKey = error.permission ? 'permission' : 'failed';
+      } finally {
+        loading = false;
+        $('refresh').disabled = false;
+        render();
+      }
+    }
+    $('previous').addEventListener('click', () => move(-1));
+    $('next').addEventListener('click', () => move(1));
+    $('refresh').addEventListener('click', load);
+    $('slider').addEventListener('input', event => { index = Number(event.target.value) - 1; render(); });
+    $('language').addEventListener('change', event => { language = event.target.value; translate(); });
+    document.addEventListener('keydown', event => {
+      if (event.target.closest('input, select, textarea') || event.altKey || event.ctrlKey || event.metaKey) return;
+      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') { event.preventDefault(); move(event.key === 'ArrowLeft' ? -1 : 1); }
+    });
+    $('card').addEventListener('touchstart', event => {
+      touch = event.touches.length === 1 ? { x: event.touches[0].clientX, y: event.touches[0].clientY } : null;
+    }, { passive: true });
+    $('card').addEventListener('touchend', event => {
+      if (!touch || !event.changedTouches.length) return;
+      const dx = event.changedTouches[0].clientX - touch.x;
+      const dy = event.changedTouches[0].clientY - touch.y;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) move(dx < 0 ? 1 : -1);
+      touch = null;
+    }, { passive: true });
+    $('card').addEventListener('touchcancel', () => { touch = null; });
+    translate();
+    load();
+  })();
+  </script>
+</body>
+</html>
