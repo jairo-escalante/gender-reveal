@@ -30,6 +30,17 @@
     #slider { width: 100%; margin: 24px 0 0; accent-color: #637f62; cursor: pointer; }
     .hint { text-align: center; color: #738074; font-size: 13px; }
     #status { text-align: center; padding: 16px; line-height: 1.6; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; text-align: center; }
+    .stat { border-radius: 14px; background: #f5f6f1; padding: 18px 8px; }
+    .stat strong { display: block; font-size: clamp(24px, 5vw, 36px); font-weight: 500; }
+    .stat span { display: block; font-size: 13px; margin-top: 8px; }
+    .stat small { display: block; margin-top: 6px; color: #738074; }
+    .stat.boy { background: #eaf2f7; } .stat.girl { background: #fbecf0; }
+    h3 { font: normal 22px Georgia, serif; margin: 28px 0 12px; }
+    #top-dates { padding-left: 24px; margin: 0; }
+    #top-dates li { padding: 10px 0 10px 4px; border-bottom: 1px solid #e7e9e2; }
+    .date-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+    .date-row small { color: #738074; white-space: nowrap; }
     @media (max-width: 480px) { main { padding: 24px 16px; } dl { grid-template-columns: 1fr; gap: 12px; } h2 { font-size: 25px; } }
   </style>
 </head>
@@ -43,6 +54,18 @@
     <p id="status" role="status">Loading messages…</p>
     <section id="viewer" hidden aria-label="Messages">
       <article id="card" aria-live="polite" aria-atomic="true">
+        <div id="summary">
+          <h2 id="summary-title">Your predictions</h2>
+          <div class="stats">
+            <div class="stat"><strong id="participants">0</strong><span id="participants-label">Participants</span></div>
+            <div class="stat boy"><strong id="boy-percent">—</strong><span id="boy-label">Boy</span><small id="boy-count"></small></div>
+            <div class="stat girl"><strong id="girl-percent">—</strong><span id="girl-label">Girl</span><small id="girl-count"></small></div>
+          </div>
+          <h3 id="dates-title">5 most selected dates</h3>
+          <ol id="top-dates"></ol>
+          <p class="hint" id="stats-note">Based on submitted responses.</p>
+        </div>
+        <div id="message-slide" hidden>
         <h2 id="name"></h2>
         <blockquote id="message"></blockquote>
         <dl>
@@ -50,6 +73,7 @@
           <div><dt id="guess-label">Name guess</dt><dd id="guess"></dd></div>
           <div><dt id="birth-label">Birth date guess</dt><dd id="birth"></dd></div>
         </dl>
+        </div>
       </article>
       <nav aria-label="Message navigation">
         <button id="previous" type="button" aria-label="Previous message">←</button>
@@ -70,42 +94,81 @@
       en: { title: 'Messages for Alexander', refresh: 'Refresh', loading: 'Loading messages…', empty: 'No responses yet. Check back soon.', failed: 'Messages could not be loaded. Please try Refresh.', permission: 'The message viewer needs to be enabled in the database.', prediction: 'Prediction', guess: 'Name guess', birth: 'Birth date guess', boy: 'Boy', girl: 'Girl', blank: 'No message was included.', none: 'Not provided', previous: 'Previous message', next: 'Next message', slider: 'Choose a message', hint: 'Use the arrows, drag the slider, or swipe.' },
       es: { title: 'Mensajes para Alexander', refresh: 'Actualizar', loading: 'Cargando mensajes…', empty: 'Todavía no hay respuestas. Vuelve pronto.', failed: 'No pudimos cargar los mensajes. Pulsa Actualizar para intentar de nuevo.', permission: 'Falta habilitar el visor de mensajes en la base de datos.', prediction: 'Predicción', guess: 'Nombre que imaginó', birth: 'Fecha de nacimiento que imaginó', boy: 'Niño', girl: 'Niña', blank: 'No dejó un mensaje.', none: 'Sin respuesta', previous: 'Mensaje anterior', next: 'Mensaje siguiente', slider: 'Elige un mensaje', hint: 'Usa las flechas, mueve la barra o desliza.' }
     };
+    Object.assign(words.en, { summary: 'Your predictions', participants: 'Participants', dates: '5 most selected dates', note: 'Based on submitted responses. Tied dates are ordered from earliest to latest.', vote: 'vote', votes: 'votes', previous: 'Previous slide', next: 'Next slide', slider: 'Choose a slide' });
+    Object.assign(words.es, { summary: 'Sus predicciones', participants: 'Participantes', dates: 'Las 5 fechas más elegidas', note: 'Según las respuestas enviadas. Las fechas empatadas se ordenan de la más temprana a la más tardía.', vote: 'voto', votes: 'votos', previous: 'Diapositiva anterior', next: 'Diapositiva siguiente', slider: 'Elige una diapositiva' });
     let language = navigator.language.startsWith('es') ? 'es' : 'en';
-    let rows = [], index = 0, loading = false, statusKey = 'loading', touch = null;
+    let rows = [], index = 0, loading = false, hasLoaded = false, statusKey = 'loading', touch = null;
     const t = key => words[language][key];
+    const votes = count => `${count} ${t(count === 1 ? 'vote' : 'votes')}`;
+    function formatDate(value) {
+      const date = new Date(`${value}T12:00:00`);
+      return Number.isNaN(date.getTime()) ? t('none') : date.toLocaleDateString(language, { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    function renderSummary() {
+      const boys = rows.filter(row => row.prediction === 'boy').length;
+      const girls = rows.filter(row => row.prediction === 'girl').length;
+      const total = boys + girls;
+      const boyPercent = total ? Math.round(boys / total * 1000) / 10 : 0;
+      const percent = value => `${value.toLocaleString(language, { maximumFractionDigits: 1 })}%`;
+      $('participants').textContent = rows.length.toLocaleString(language);
+      $('boy-percent').textContent = total ? percent(boyPercent) : '—';
+      $('girl-percent').textContent = total ? percent(Math.round((100 - boyPercent) * 10) / 10) : '—';
+      $('boy-count').textContent = votes(boys);
+      $('girl-count').textContent = votes(girls);
+      const dates = new Map();
+      for (const row of rows) if (row.birth_guess) dates.set(row.birth_guess, (dates.get(row.birth_guess) || 0) + 1);
+      $('top-dates').replaceChildren();
+      const topDates = [...dates].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 5);
+      for (const [date, count] of topDates) {
+        const item = document.createElement('li');
+        const line = document.createElement('div');
+        line.className = 'date-row';
+        const label = document.createElement('span');
+        label.textContent = formatDate(date);
+        const countLabel = document.createElement('small');
+        countLabel.textContent = votes(count);
+        line.append(label, countLabel);
+        item.append(line);
+        $('top-dates').append(item);
+      }
+    }
 
     function render() {
-      $('viewer').hidden = rows.length === 0;
+      $('viewer').hidden = !hasLoaded;
       $('status').hidden = statusKey === null;
       $('status').textContent = statusKey ? t(statusKey) : '';
-      if (!rows.length) return;
-      const row = rows[index];
+      if (!hasLoaded) return;
+      $('summary').hidden = index !== 0;
+      $('message-slide').hidden = index === 0;
+      const row = rows[index - 1];
+      if (index === 0) renderSummary();
+      else {
       // Guest content is always rendered as text, never HTML.
       $('name').textContent = row.name;
       $('message').textContent = row.message?.trim() ? row.message : t('blank');
       $('message').lang = row.language === 'es' ? 'es' : 'en';
       $('prediction').textContent = row.prediction === 'boy' ? t('boy') : t('girl');
       $('guess').textContent = row.name_guess?.trim() ? row.name_guess : t('none');
-      const date = new Date(`${row.birth_guess}T12:00:00`);
-      $('birth').textContent = Number.isNaN(date.getTime()) ? t('none') : date.toLocaleDateString(language, { month: 'long', day: 'numeric', year: 'numeric' });
-      $('position').textContent = `${index + 1} / ${rows.length}`;
-      $('slider').max = String(rows.length);
+      $('birth').textContent = formatDate(row.birth_guess);
+      }
+      $('position').textContent = `${index + 1} / ${rows.length + 1}`;
+      $('slider').max = String(rows.length + 1);
       $('slider').value = String(index + 1);
-      $('slider').setAttribute('aria-valuetext', `${index + 1} / ${rows.length}: ${row.name}`);
-      $('previous').disabled = $('next').disabled = rows.length < 2;
-      $('slider').disabled = rows.length < 2;
+      $('slider').setAttribute('aria-valuetext', `${index + 1} / ${rows.length + 1}: ${index === 0 ? t('summary') : row.name}`);
+      $('previous').disabled = $('next').disabled = rows.length === 0;
+      $('slider').disabled = rows.length === 0;
     }
     function translate() {
       document.documentElement.lang = language;
       document.title = t('title');
       $('language').value = language;
-      for (const [id, key] of Object.entries({title:'title',refresh:'refresh','prediction-label':'prediction','guess-label':'guess','birth-label':'birth',hint:'hint'})) $(id).textContent = t(key);
+      for (const [id, key] of Object.entries({title:'title',refresh:'refresh','prediction-label':'prediction','guess-label':'guess','birth-label':'birth',hint:'hint','summary-title':'summary','participants-label':'participants','boy-label':'boy','girl-label':'girl','dates-title':'dates','stats-note':'note'})) $(id).textContent = t(key);
       for (const key of ['previous','next','slider']) $(key).setAttribute('aria-label', t(key));
       render();
     }
     function move(delta) {
-      if (rows.length < 2) return;
-      index = (index + delta + rows.length) % rows.length;
+      if (!rows.length) return;
+      index = (index + delta + rows.length + 1) % (rows.length + 1);
       render();
     }
     async function load() {
@@ -114,7 +177,7 @@
       $('refresh').disabled = true;
       statusKey = 'loading';
       render();
-      const selected = rows[index]?.id;
+      const selected = index === 0 ? null : rows[index - 1]?.id;
       try {
         const all = [];
         // Page through every response, including rows with an optional blank message.
@@ -139,7 +202,8 @@
           if (page.length < pageSize) break;
         }
         rows = all;
-        index = Math.max(0, rows.findIndex(row => row.id === selected));
+        hasLoaded = true;
+        index = selected ? Math.max(0, rows.findIndex(row => row.id === selected) + 1) : 0;
         statusKey = rows.length ? null : 'empty';
       } catch (error) {
         statusKey = error.permission ? 'permission' : 'failed';
